@@ -1,15 +1,15 @@
 package warp
 
 import (
-	"math/rand"
+	crand "crypto/rand"
+	"math/big"
 	"net/netip"
-	"time"
 
 	"github.com/bepass-org/warp-plus/iputils"
 )
 
-func WarpPrefixes() []netip.Prefix {
-	return []netip.Prefix{
+var (
+	warpPrefixes = []netip.Prefix{
 		netip.MustParsePrefix("162.159.192.0/24"),
 		netip.MustParsePrefix("162.159.195.0/24"),
 		netip.MustParsePrefix("188.114.96.0/24"),
@@ -19,6 +19,12 @@ func WarpPrefixes() []netip.Prefix {
 		netip.MustParsePrefix("2606:4700:d0::/64"),
 		netip.MustParsePrefix("2606:4700:d1::/64"),
 	}
+
+	
+)
+
+func WarpPrefixes() []netip.Prefix {
+	return warpPrefixes
 }
 
 func RandomWarpPrefix(v4, v6 bool) netip.Prefix {
@@ -26,19 +32,27 @@ func RandomWarpPrefix(v4, v6 bool) netip.Prefix {
 		panic("Must choose a IP version for RandomWarpPrefix")
 	}
 
-	cidrs := WarpPrefixes()
-	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
-	for {
-		cidr := cidrs[rng.Intn(len(cidrs))]
-
+	cidrs := warpPrefixes
+	var filtered []netip.Prefix
+	for _, cidr := range cidrs {
 		if v4 && cidr.Addr().Is4() {
-			return cidr
-		}
-
-		if v6 && cidr.Addr().Is6() {
-			return cidr
+			filtered = append(filtered, cidr)
+		} else if v6 && cidr.Addr().Is6() {
+			filtered = append(filtered, cidr)
 		}
 	}
+
+	if len(filtered) == 0 {
+		// Fallback to prevent panic or loop if no prefixes match (unlikely with default list)
+		return cidrs[0]
+	}
+
+	idx, err := crand.Int(crand.Reader, big.NewInt(int64(len(filtered))))
+	if err != nil {
+		// Fallback if crypto/rand fails
+		return filtered[0]
+	}
+	return filtered[idx.Int64()]
 }
 
 func WarpPorts() []uint16 {
@@ -102,8 +116,11 @@ func WarpPorts() []uint16 {
 
 func RandomWarpPort() uint16 {
 	ports := WarpPorts()
-	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return ports[rng.Intn(len(ports))]
+	idx, err := crand.Int(crand.Reader, big.NewInt(int64(len(ports))))
+	if err != nil {
+		return ports[0]
+	}
+	return ports[idx.Int64()]
 }
 
 func RandomWarpEndpoint(v4, v6 bool) (netip.AddrPort, error) {

@@ -2,14 +2,13 @@ package iputils
 
 import (
 	"context"
+	crand "crypto/rand"
 	"errors"
 	"fmt"
 	"math/big"
-	"math/rand"
 	"net"
 	"net/netip"
 	"strconv"
-	"time"
 )
 
 // RandomIPFromPrefix returns a random IP from the provided CIDR prefix.
@@ -25,9 +24,6 @@ func RandomIPFromPrefix(cidr netip.Prefix) (netip.Addr, error) {
 		return netip.Addr{}, fmt.Errorf("invalid cidr: %s", cidr)
 	}
 
-	// Initialise rand number generator
-	rng := rand.New(rand.NewSource(time.Now().UnixNano()))
-
 	// Find the bit length of the Host portion of the provided CIDR
 	// prefix
 	hostLen := big.NewInt(int64(startingAddress.BitLen() - prefixLen))
@@ -36,7 +32,10 @@ func RandomIPFromPrefix(cidr netip.Prefix) (netip.Addr, error) {
 	max := new(big.Int).Exp(big.NewInt(2), hostLen, nil)
 
 	// Generate the random number
-	randInt := new(big.Int).Rand(rng, max)
+	randInt, err := crand.Int(crand.Reader, max)
+	if err != nil {
+		return netip.Addr{}, fmt.Errorf("failed to generate random number: %w", err)
+	}
 
 	// Get the first address in the CIDR prefix in 16-bytes form
 	startingAddress16 := startingAddress.As16()

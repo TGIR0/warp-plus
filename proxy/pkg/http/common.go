@@ -1,6 +1,7 @@
 package http
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"net"
@@ -55,8 +56,22 @@ func (rw *responseWriter) Write(data []byte) (int, error) {
 	return rw.conn.Write(data)
 }
 
+type BufferedConn struct {
+	net.Conn
+	r *bufio.Reader
+}
+
+func NewBufferedConn(c net.Conn, r *bufio.Reader) *BufferedConn {
+	return &BufferedConn{Conn: c, r: r}
+}
+
+func (b *BufferedConn) Read(p []byte) (int, error) {
+	return b.r.Read(p)
+}
+
 type customConn struct {
 	net.Conn
+	reader      *bufio.Reader
 	req         *http.Request
 	initialData []byte
 	once        sync.Once
@@ -80,5 +95,8 @@ func (c *customConn) Read(p []byte) (n int, err error) {
 		return
 	}
 
+	if c.reader != nil {
+		return c.reader.Read(p)
+	}
 	return c.Conn.Read(p)
 }

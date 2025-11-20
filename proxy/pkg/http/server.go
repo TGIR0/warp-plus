@@ -136,12 +136,12 @@ func (s *Server) ServeConn(conn net.Conn) error {
 		return err
 	}
 
-	return s.handleHTTP(conn, req, req.Method == http.MethodConnect)
+	return s.handleHTTP(conn, reader, req, req.Method == http.MethodConnect)
 }
 
-func (s *Server) handleHTTP(conn net.Conn, req *http.Request, isConnectMethod bool) error {
+func (s *Server) handleHTTP(conn net.Conn, reader *bufio.Reader, req *http.Request, isConnectMethod bool) error {
 	if s.UserConnectHandle == nil {
-		return s.embedHandleHTTP(conn, req, isConnectMethod)
+		return s.embedHandleHTTP(conn, reader, req, isConnectMethod)
 	}
 
 	if isConnectMethod {
@@ -149,10 +149,13 @@ func (s *Server) handleHTTP(conn net.Conn, req *http.Request, isConnectMethod bo
 		if err != nil {
 			return err
 		}
+		// Even for connect, we should use the reader to avoid losing buffered data
+		conn = NewBufferedConn(conn, reader)
 	} else {
 		cConn := &customConn{
-			Conn: conn,
-			req:  req,
+			Conn:   conn,
+			reader: reader,
+			req:    req,
 		}
 		conn = cConn
 	}
@@ -188,7 +191,7 @@ func (s *Server) handleHTTP(conn net.Conn, req *http.Request, isConnectMethod bo
 	return s.UserConnectHandle(proxyReq)
 }
 
-func (s *Server) embedHandleHTTP(conn net.Conn, req *http.Request, isConnectMethod bool) error {
+func (s *Server) embedHandleHTTP(conn net.Conn, reader *bufio.Reader, req *http.Request, isConnectMethod bool) error {
 	defer func() {
 		_ = conn.Close()
 	}()
@@ -241,5 +244,6 @@ func (s *Server) embedHandleHTTP(conn net.Conn, req *http.Request, isConnectMeth
 		buf1 = make([]byte, 32*1024)
 		buf2 = make([]byte, 32*1024)
 	}
-	return statute.Tunnel(s.Context, target, conn, buf1, buf2)
+	// Wrap conn with BufferedConn to use the existing reader
+	return statute.Tunnel(s.Context, target, NewBufferedConn(conn, reader), buf1, buf2)
 }

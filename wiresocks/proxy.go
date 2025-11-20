@@ -132,12 +132,10 @@ func copyConnTimeout(dst net.Conn, src net.Conn, buf []byte, timeout time.Durati
 	}
 
 	for {
-		deadline := time.Time{}
 		if timeout != 0 {
-			deadline = time.Now().Add(timeout)
-		}
-		if err := src.SetReadDeadline(deadline); err != nil {
-			return 0, err
+			if err := src.SetReadDeadline(time.Now().Add(timeout)); err != nil {
+				return 0, err
+			}
 		}
 
 		nr, er := src.Read(buf)

@@ -50,11 +50,6 @@ func (q *IPQueue) Enqueue(info statute.IPInfo) bool {
 		}
 	}()
 
-	q.log.Debug("Enqueue: Sorting queue by RTT")
-	sort.Slice(q.queue, func(i, j int) bool {
-		return q.queue[i].RTT < q.queue[j].RTT
-	})
-
 	if len(q.queue) == 0 {
 		q.log.Debug("Enqueue: empty queue adding first available item")
 		q.queue = append(q.queue, info)
@@ -66,7 +61,9 @@ func (q *IPQueue) Enqueue(info statute.IPInfo) bool {
 		if len(q.queue) >= q.maxQueueSize && info.RTT < q.queue[len(q.queue)-1].RTT {
 			q.log.Debug("Enqueue: the queue is full, remove the item with the highest RTT.")
 			q.queue = q.queue[:len(q.queue)-1]
-		} else if len(q.queue) < q.maxQueueSize {
+		}
+
+		if len(q.queue) < q.maxQueueSize {
 			q.log.Debug("Enqueue: Insert the new item in a sorted position.")
 			index := sort.Search(len(q.queue), func(i int) bool { return q.queue[i].RTT > info.RTT })
 			q.queue = append(q.queue[:index], append([]statute.IPInfo{info}, q.queue[index:]...)...)
