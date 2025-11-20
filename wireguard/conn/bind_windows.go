@@ -80,7 +80,7 @@ type WinRingBind struct {
 func NewDefaultBind() Bind { return NewWinRingBind() }
 
 func NewWinRingBind() Bind {
-	if true || !winrio.Initialize() {
+	if !winrio.Initialize() {
 		return NewStdNetBind()
 	}
 	return new(WinRingBind)

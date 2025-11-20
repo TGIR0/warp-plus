@@ -38,10 +38,10 @@ func main() {
 	bindPort := binary.BigEndian.Uint16(response[8:10])
 
 	// Print the bind address
-	fmt.Printf("Bind address: %s:%d\n", bindIP, bindPort)
+	fmt.Printf("Bind address: %s\n", net.JoinHostPort(bindIP.String(), strconv.Itoa(int(bindPort))))
 
 	// Create UDP connection
-	udpConn, err := net.Dial("udp", fmt.Sprintf("%s:%d", bindIP, bindPort))
+	udpConn, err := net.Dial("udp", net.JoinHostPort(bindIP.String(), strconv.Itoa(int(bindPort))))
 	if err != nil {
 		panic(err)
 	}

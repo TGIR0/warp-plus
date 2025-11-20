@@ -155,7 +155,6 @@ func (peer *Peer) SendBuffers(buffers [][]byte, trick bool) error {
 }
 
 func (peer *Peer) String() string {
-	return ""
 	// The awful goo that follows is identical to:
 	//
 	//   base64Key := base64.StdEncoding.EncodeToString(peer.handshake.remoteStatic[:])

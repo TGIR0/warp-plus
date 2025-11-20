@@ -13,15 +13,15 @@ import (
 )
 
 const (
-	apiBase string = "https://api.cloudflareclient.com/v0a4005"
+	apiBase   string = "https://api.cloudflareclient.com/v0a4005"
+	userAgent string = "okhttp/3.12.1"
+	cfVersion string = "a-6.30-3596"
 )
 
-func defaultHeaders() map[string]string {
-	return map[string]string{
-		"Content-Type":      "application/json; charset=UTF-8",
-		"User-Agent":        "okhttp/3.12.1",
-		"CF-Client-Version": "a-6.30-3596",
-	}
+func (w *WarpAPI) addDefaultHeaders(req *http.Request) {
+	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
+	req.Header.Set("User-Agent", userAgent)
+	req.Header.Set("CF-Client-Version", cfVersion)
 }
 
 type IdentityAccount struct {
@@ -123,8 +123,11 @@ func NewWarpAPI(l *slog.Logger) *WarpAPI {
 	}
 
 	return &WarpAPI{
-		l:      l,
-		client: &http.Client{Transport: transport},
+		l: l,
+		client: &http.Client{
+			Transport: transport,
+			Timeout:   30 * time.Second,
+		},
 	}
 }
 
@@ -138,9 +141,7 @@ func (w *WarpAPI) GetAccount(authToken, deviceID string) (IdentityAccount, error
 	}
 
 	// Set headers
-	for k, v := range defaultHeaders() {
-		req.Header.Set(k, v)
-	}
+	w.addDefaultHeaders(req)
 	req.Header.Set("Authorization", "Bearer "+authToken)
 
 	// Create HTTP client and execute request
@@ -178,9 +179,7 @@ func (w *WarpAPI) GetBoundDevices(authToken, deviceID string) ([]IdentityDevice,
 	}
 
 	// Set headers
-	for k, v := range defaultHeaders() {
-		req.Header.Set(k, v)
-	}
+	w.addDefaultHeaders(req)
 	req.Header.Set("Authorization", "Bearer "+authToken)
 
 	// Create HTTP client and execute request
@@ -218,9 +217,7 @@ func (w *WarpAPI) GetSourceDevice(authToken, deviceID string) (Identity, error) 
 	}
 
 	// Set headers
-	for k, v := range defaultHeaders() {
-		req.Header.Set(k, v)
-	}
+	w.addDefaultHeaders(req)
 	req.Header.Set("Authorization", "Bearer "+authToken)
 
 	// Create HTTP client and execute request
@@ -274,9 +271,7 @@ func (w *WarpAPI) Register(publicKey string) (Identity, error) {
 	}
 
 	// Set headers
-	for k, v := range defaultHeaders() {
-		req.Header.Set(k, v)
-	}
+	w.addDefaultHeaders(req)
 
 	// Create HTTP client and execute request
 	resp, err := w.client.Do(req)
@@ -313,9 +308,7 @@ func (w *WarpAPI) ResetAccountLicense(authToken, deviceID string) (License, erro
 	}
 
 	// Set headers
-	for k, v := range defaultHeaders() {
-		req.Header.Set(k, v)
-	}
+	w.addDefaultHeaders(req)
 	req.Header.Set("Authorization", "Bearer "+authToken)
 
 	// Create HTTP client and execute request
@@ -358,9 +351,7 @@ func (w *WarpAPI) UpdateAccount(authToken, deviceID, license string) (IdentityAc
 	}
 
 	// Set headers
-	for k, v := range defaultHeaders() {
-		req.Header.Set(k, v)
-	}
+	w.addDefaultHeaders(req)
 	req.Header.Set("Authorization", "Bearer "+authToken)
 
 	// Create HTTP client and execute request
@@ -408,9 +399,7 @@ func (w *WarpAPI) UpdateBoundDevice(authToken, deviceID, otherDeviceID, name str
 	}
 
 	// Set headers
-	for k, v := range defaultHeaders() {
-		req.Header.Set(k, v)
-	}
+	w.addDefaultHeaders(req)
 	req.Header.Set("Authorization", "Bearer "+authToken)
 
 	// Create HTTP client and execute request
@@ -453,9 +442,7 @@ func (w *WarpAPI) UpdateSourceDevice(authToken, deviceID, publicKey string) (Ide
 	}
 
 	// Set headers
-	for k, v := range defaultHeaders() {
-		req.Header.Set(k, v)
-	}
+	w.addDefaultHeaders(req)
 	req.Header.Set("Authorization", "Bearer "+authToken)
 
 	// Create HTTP client and execute request
@@ -493,9 +480,7 @@ func (w *WarpAPI) DeleteDevice(authToken, deviceID string) error {
 	}
 
 	// Set headers
-	for k, v := range defaultHeaders() {
-		req.Header.Set(k, v)
-	}
+	w.addDefaultHeaders(req)
 	req.Header.Set("Authorization", "Bearer "+authToken)
 
 	// Create HTTP client and execute request

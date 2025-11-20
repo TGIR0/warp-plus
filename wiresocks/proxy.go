@@ -53,7 +53,9 @@ func StartProxy(ctx context.Context, l *slog.Logger, tnet *netstack.Net, bindAdd
 		}),
 	)
 	go func() {
-		_ = proxy.ListenAndServe()
+		if err := proxy.ListenAndServe(); err != nil {
+			l.Error("proxy server error", "error", err)
+		}
 	}()
 	go func() {
 		<-vt.Ctx.Done()

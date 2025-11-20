@@ -115,7 +115,8 @@ func TestDialContextListenerTimesOut(t *testing.T) {
 	}
 	defer l.Close()
 	d := 10 * time.Millisecond
-	ctx, _ := context.WithTimeout(context.Background(), d)
+	ctx, cancel := context.WithTimeout(context.Background(), d)
+	defer cancel()
 	pipe, err := namedpipe.DialContext(ctx, pipePath)
 	if err == nil {
 		pipe.Close()
