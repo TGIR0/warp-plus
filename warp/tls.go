@@ -8,7 +8,7 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/avast/retry-go"
+	"github.com/avast/retry-go/v4"
 	"github.com/bepass-org/warp-plus/iputils"
 
 	"github.com/noql-net/certpool"

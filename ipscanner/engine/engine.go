@@ -49,7 +49,7 @@ func (e *Engine) Run(ctx context.Context) {
 		e.log.Debug("Started new scanning round")
 		batch, err := e.generator.NextBatch()
 		if err != nil {
-			e.log.Error("Error while generating IP: %v", err)
+			e.log.Error("Error while generating IP", "error", err)
 			return
 		}
 		for _, ip := range batch {
