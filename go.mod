@@ -1,8 +1,6 @@
 module github.com/bepass-org/warp-plus
 
-go 1.24.0
-
-toolchain go1.24.3
+go 1.25.4
 
 require (
 	github.com/adrg/xdg v0.5.3
@@ -18,10 +16,10 @@ require (
 	github.com/refraction-networking/utls v1.8.1
 	github.com/rodaine/table v1.3.0
 	github.com/sagernet/gvisor v0.0.0-20241123041152-536d05261cff
-	github.com/sagernet/sing v0.6.10
-	golang.org/x/crypto v0.39.0
-	golang.org/x/net v0.41.0
-	golang.org/x/sys v0.34.0
+	github.com/sagernet/sing v0.7.13
+	golang.org/x/crypto v0.36.0
+	golang.org/x/net v0.38.0
+	golang.org/x/sys v0.31.0
 )
 
 require (
@@ -35,5 +33,5 @@ require (
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/rogpeppe/go-internal v1.13.1 // indirect
 	github.com/stretchr/testify v1.10.0 // indirect
-	golang.org/x/time v0.7.0 // indirect
+	golang.org/x/time v0.9.0 // indirect
 )
