@@ -18,7 +18,6 @@ Warp-Plus is an open-source implementation of Cloudflare's Warp, enhanced with P
 
 ### Usage
 
-```text
 NAME
   warp-plus
 
@@ -39,9 +38,10 @@ FLAGS
       --fwmark UINT        set linux firewall mark for tun mode (requires sudo/root/CAP_NET_ADMIN) (default: 0)
       --reserved STRING    override wireguard reserved value (format: '1,2,3')
       --wgconf STRING      path to a normal wireguard config
-      --test-url STRING    connectivity test url (default: http://connectivity.cloudflareclient.com/cdn-cgi/trace)
+      --test-url STRING    connectivity test url (default: <http://connectivity.cloudflareclient.com/cdn-cgi/trace>)
   -c, --config STRING      path to config file
       --version            displays version number
+
 ```
 
 ### Country Codes for Psiphon
@@ -81,8 +81,10 @@ FLAGS
 
 ### Termux
 
-```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/bepass-org/warp-plus/master/termux.sh)
+```
+
+bash <(curl -fsSL <https://raw.githubusercontent.com/bepass-org/warp-plus/master/termux.sh>)
+
 ```
 
 ![1](https://github.com/Ptechgithub/configs/blob/main/media/18.jpg?raw=true)

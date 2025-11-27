@@ -11,6 +11,7 @@ import (
 
 	"github.com/bepass-org/warp-plus/iputils"
 	"github.com/bepass-org/warp-plus/psiphon"
+	"github.com/bepass-org/warp-plus/tunbridge"
 	"github.com/bepass-org/warp-plus/warp"
 	"github.com/bepass-org/warp-plus/wireguard/tun"
 	"github.com/bepass-org/warp-plus/wireguard/tun/netstack"
@@ -27,11 +28,13 @@ type WarpOptions struct {
 	DnsAddr         netip.Addr
 	Psiphon         *PsiphonOptions
 	Gool            bool
+	Masque          bool
 	Scan            *wiresocks.ScanOptions
 	CacheDir        string
 	FwMark          uint32
 	WireguardConfig string
 	Reserved        string
+	TunFd           int
 	TestURL         string
 }
 
@@ -89,6 +92,9 @@ func RunWarp(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 
 	var warpErr error
 	switch {
+	case opts.Masque:
+		l.Info("running in MASQUE (HTTP/3) mode")
+		warpErr = runMasque(ctx, l, opts, endpoints[0])
 	case opts.Psiphon != nil:
 		l.Info("running in Psiphon (cfon) mode")
 		// run primary warp on a random tcp port and run psiphon on bind address
@@ -158,6 +164,14 @@ func runWireguard(ctx context.Context, l *slog.Logger, opts WarpOptions) error {
 		return werr
 	}
 
+	if opts.TunFd > 0 {
+		go func() {
+			if err := tunbridge.Start(ctx, l.With("subsystem", "tunbridge"), opts.TunFd, conf.Interface.MTU, tnet); err != nil {
+				l.Error("tunbridge failed", "error", err)
+			}
+		}()
+	}
+
 	// Run a proxy on the userspace stack
 	_, err = wiresocks.StartProxy(ctx, l, tnet, opts.Bind)
 	if err != nil {
@@ -225,6 +239,14 @@ func runWarp(ctx context.Context, l *slog.Logger, opts WarpOptions, endpoint str
 	}
 	if werr != nil {
 		return werr
+	}
+
+	if opts.TunFd > 0 {
+		go func() {
+			if err := tunbridge.Start(ctx, l.With("subsystem", "tunbridge"), opts.TunFd, conf.Interface.MTU, tnet); err != nil {
+				l.Error("tunbridge failed", "error", err)
+			}
+		}()
 	}
 
 	// Run a proxy on the userspace stack
@@ -414,6 +436,14 @@ func runWarpWithPsiphon(ctx context.Context, l *slog.Logger, opts WarpOptions, e
 	}
 	if werr != nil {
 		return werr
+	}
+
+	if opts.TunFd > 0 {
+		go func() {
+			if err := tunbridge.Start(ctx, l.With("subsystem", "tunbridge"), opts.TunFd, conf.Interface.MTU, tnet); err != nil {
+				l.Error("tunbridge failed", "error", err)
+			}
+		}()
 	}
 
 	// Run a proxy on the userspace stack

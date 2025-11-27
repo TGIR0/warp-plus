@@ -1,6 +1,8 @@
 module github.com/bepass-org/warp-plus
 
-go 1.25.4
+go 1.24.1
+
+toolchain go1.24.3
 
 require (
 	github.com/adrg/xdg v0.5.3
